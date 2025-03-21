@@ -6,23 +6,31 @@ const words = [
     { scrambled: "RHCYER", original: "CHERRY", hint: "A small red fruit often found on cakes and desserts." }
 ];
 
-let player1 = { name: "", score: 0 };
-let player2 = { name: "", score: 0 };
+let player1 = { name: "", score: 0, questions: [] };
+let player2 = { name: "", score: 0, questions: [] };
 let currentPlayer;
 let round = 1;
 let timer;
 let timeLeft = 60;
-let selectedWord;
 
 function startGame() {
     player1.name = document.getElementById("player1-name").value || "Player 1";
     player2.name = document.getElementById("player2-name").value || "Player 2";
     currentPlayer = player1;
 
+    // Assign 5 unique questions per player
+    player1.questions = getRandomQuestions();
+    player2.questions = getRandomQuestions();
+
     document.getElementById("login-container").style.display = "none";
     document.getElementById("game-container").style.display = "block";
 
     startNewRound();
+}
+
+function getRandomQuestions() {
+    let shuffled = words.sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 5); // Select 5 unique questions
 }
 
 function startNewRound() {
@@ -36,7 +44,7 @@ function startNewRound() {
     document.getElementById("timer").innerText = `Time Left: ${timeLeft}s`;
     document.getElementById("score").innerText = `${currentPlayer.name}'s Score: ${currentPlayer.score}`;
 
-    selectedWord = words[Math.floor(Math.random() * words.length)];
+    let selectedWord = currentPlayer.questions[round - 1]; // Get the current round's word
     document.getElementById("scrambled-word").innerText = `Scrambled Word: ${selectedWord.scrambled}`;
     document.getElementById("hint").innerText = "Hint: " + selectedWord.hint;
     document.getElementById("player-input").value = "";
@@ -59,17 +67,18 @@ function countdown() {
 
 function checkPlayerGuess() {
     let playerGuess = document.getElementById("player-input").value.toUpperCase();
+    let selectedWord = currentPlayer.questions[round - 1];
 
     if (playerGuess === selectedWord.original) {
         clearInterval(timer);
         currentPlayer.score += 10;
         document.getElementById("score").innerText = `${currentPlayer.name}'s Score: ${currentPlayer.score}`;
         document.getElementById("result").innerText = "✅ Correct! +10 Points!";
-        setTimeout(nextRound, 2000);
     } else {
-        document.getElementById("result").innerText = "❌ Wrong! New word coming...";
-        setTimeout(startNewRound, 2000);
+        document.getElementById("result").innerText = "❌ Wrong! Moving to next word...";
     }
+
+    setTimeout(nextRound, 2000);
 }
 
 function nextRound() {
